@@ -1,0 +1,75 @@
+import codecs
+import os.path
+import math
+import os
+def travel_dir(rootdir):#遍历文件夹
+
+    file_list=[]
+    for root,dirs,files in os.walk(rootdir):
+        for f in files:
+            file_list.append(os.path.join(root,f))
+    return (file_list)
+
+
+def read_txt(file_list):
+    list1=[]
+    list2=[]
+    for file in file_list:
+        txt=''
+        f=codecs.open(file,'r','utf-8')
+        txt=f.read()
+        f.close()
+        list1.append(txt)
+    for txt in list1:
+        tempt=[]
+        txt=txt.strip()
+        tempt.append(txt.split('/'))
+        list2.extend(tempt)#extend append的区别
+    return(list1,list2)
+
+def count_idf(word,list1):
+    idf_dic={}
+    word=list(set(word))
+    s=0
+    for wo in word:
+        df=0
+        for txt in list1:
+            if wo in txt:
+                df=df+1
+            else:
+                continue
+        idf_dic[wo]=round(math.log(len(list1)/(df+1)),2)
+    return(idf_dic)
+
+def count_tf(word):
+    freq_dic={}#词语在一篇文章中出现的次数
+    #time=0
+    tf_dic={}
+    final_dic={}  
+    for wo in word:
+        if wo in freq_dic:
+            freq_dic[wo]+=1
+        else:
+            freq_dic[wo]=1
+        tf_dic[wo]=freq_dic[wo]/len(word)
+    return(tf_dic)
+def main():
+    rootdir=r'F:\old\fenci'
+    file_list=travel_dir(rootdir)
+    (list1,list2)=read_txt(file_list)
+    fw=codecs.open(r'result.txt','a','utf-8')
+    for txt in list2:     
+        final_dic={}
+        print('ok1')
+        tf_dic=count_tf(txt)
+        idf_dic=count_idf(txt,list1)        
+        for wo in list(set(txt)):
+            final_dic[wo]=tf_dic[wo]*idf_dic[wo]
+        for i in sorted(final_dic.items(),key=lambda x:x[1],reverse=True):
+            fw.write(str(i)+'\n')
+  
+
+
+
+if(__name__=='__main__'):
+    main()
